@@ -4,23 +4,45 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>PoS System</title>
-    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+    <link rel="stylesheet" href="styles.css">
 </head>
 <body>
     <header>
         <nav>
             <ul>
-                {% if "username" in session %}
-                <li><a href="{{ url_for('logout') }}">Logout</a></li>
-                {% else %}
-                <li><a href="{{ url_for('login') }}">Login</a></li>
-                <li><a href="{{ url_for('register') }}">Register</a></li>
-                {% endif %}
+                <li><a href="base.html">Home</a></li>
+                <li><a href="login.html">Login</a></li>
+                <li><a href="register.html">Register</a></li>
+                <li><a href="cart.html">Cart</a></li>
             </ul>
         </nav>
     </header>
+
     <main>
-        {% block content %}{% endblock %}
+        <section id="assortment">
+            <h1>Shop by Category</h1>
+            <div class="items">
+                <div class="item">
+                    <img src="fruit.jpg" alt="Fruit">
+                    <button>Add to Cart</button>
+                </div>
+                <div class="item">
+                    <img src="vegetables.jpg" alt="Vegetables">
+                    <button>Add to Cart</button>
+                </div>
+                <!-- Space to add more -->
+            </div>
+        </section>
+
+        <section id="user-options">
+            <h2>Choose Your Option</h2>
+            <button>Click and Collect</button>
+            <button>Request Delivery</button>
+        </section>
     </main>
+
+    <footer>
+        <p>&copy; 2024 PoS System</p>
+    </footer>
 </body>
 </html>
