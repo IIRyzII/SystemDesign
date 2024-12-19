@@ -1,0 +1,122 @@
+body {
+    font-family: Arial, sans-serif;
+    margin: 0;
+    padding: 0;
+    line-height: 1.6;
+}
+
+header {
+    background-color: #333;
+    color: #fff;
+    padding: 10px 20px;
+    text-align: center;
+}
+
+h1 {
+    margin: 10px 0;
+}
+
+main, form {
+    margin: 20px;
+}
+
+button {
+    background-color: #333;
+    color: #fff;
+    border: none;
+    padding: 10px 20px;
+    cursor: pointer;
+}
+
+button:hover {
+    background-color: #555;
+}
+
+#message-container {
+    margin: 10px 0;
+    font-size: 14px;
+}
+
+
+#product-container {
+    display: grid;             
+    grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+    gap: 16px;                   
+    padding: 16px;              
+    justify-items: center;        
+}
+
+
+.product {
+    background-color: #f9f9f9;  
+    border: 1px solid #ddd;   
+    border-radius: 8px;         
+    padding: 16px;              
+    text-align: center;        
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    transition: transform 0.3s ease; 
+}
+
+.product:hover {
+    transform: scale(1.05);     
+}
+
+
+.product img {
+    width: 100%;               
+    height: auto;              
+    border-radius: 4px;         
+    margin-bottom: 12px;       
+}
+
+/* Style for the product title */
+.product h3 {
+    font-size: 1.2em;           
+    margin-bottom: 8px;          
+}
+/* Style for product price */
+.product p {
+    font-size: 1.1em;           
+    margin-bottom: 12px;      
+}
+
+/* Style for Add to Cart button */
+.product button {
+    background-color: #4CAF50; 
+    color: white;              
+    padding: 10px 20px;         
+    border: none;               
+    border-radius: 5px;       
+    cursor: pointer;          
+    transition: background-color 0.3s ease;
+}
+
+/* Hover effect for the button */
+.product button:hover {
+    background-color: #45a049; 
+}
+
+/* Style for the Cart Icon container */
+#cart-icon-container {
+    position: absolute;
+    top: 20px;
+    right: 20px;
+    font-size: 1.5em;
+    color: #333;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+/* Style for the item count text */
+#cart-item-count {
+    background-color: #ff6347; 
+    color: white;              
+    padding: 3px 8px;           
+    border-radius: 12px;        
+    font-size: 1em;
+    position: absolute;
+    top: -5px;                  
+    right: -5px;               
+}
