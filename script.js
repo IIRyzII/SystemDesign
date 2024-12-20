@@ -13,9 +13,9 @@ let orders = JSON.parse(localStorage.getItem("orders")) || [];
 
 // Membership Logic
 const membershipTiers = {
-    bronze: {shipping: 1 },
-    silver: {shipping: 0.75 },
-    gold: {shipping: 0.5 },
+    bronze: { shipping: 1 },
+    silver: { shipping: 0.75 },
+    gold: { shipping: 0.5 },
     platinum: { shipping: 0 }
 };
 
@@ -25,164 +25,24 @@ cart = cart.map(item => ({
     id: typeof item.id === "string" ? parseInt(item.id, 10) : item.id
 }));
 
-document.addEventListener('DOMContentLoaded', () => {
-    // Ensure user is signed in
-    if (!currentUser && !window.location.pathname.includes("signin") && !window.location.pathname.includes("signup")) {
-        window.location.href = "signin.html";
+// Display Messages Helper
+function displayMessage(message, isError = false) {
+    if (messageContainer) {
+        messageContainer.textContent = message;
+        messageContainer.style.color = isError ? "red" : "green";
     }
-
-    // Display Username and Membership
-    if (usernameDisplay && currentUser) {
-        const user = getUserData();
-        if (user) {
-            usernameDisplay.textContent = `${user.username} (${user.membership})`;
-        }
-    }
-
-    // Logout functionality
-    if (logoutButton) {
-        logoutButton.addEventListener("click", () => {
-            localStorage.removeItem("currentUser");
-            window.location.href = "signin.html";
-        });
-    }
-
-    // Checkout Page logic
-    const checkoutContainer = document.getElementById("checkout-summary");
-    const confirmOrderButton = document.getElementById("confirm-order");
-
-    if (!checkoutContainer) {
-        console.error("Checkout summary container not found!");
-        return;
-    }
-
-    if (!confirmOrderButton) {
-        console.error("Confirm order button not found!");
-        return;
-    }
-
-    // Handle Empty Cart
-    if (cart.length === 0) {
-        displayMessage("Your cart is empty. Add items before proceeding to checkout.", true);
-        checkoutContainer.innerHTML = `<p>Your cart is empty. Add items before proceeding to checkout.</p>`;
-        return;
-    }
-
-    // Calculate Cart Summary
-    const user = getUserData();
-    const membership = user ? user.membership : "bronze"; // Default to 'bronze' if user has no membership
-    let totalCost = 0;
-    let totalQuantity = 0;  // Track total quantity of items for shipping calculation
-
-    // Check for valid cart data (price and quantity must be numbers)
-    const isValidCart = cart.every(item =>
-        item && typeof item.price === "number" && typeof item.quantity === "number"
-    );
-
-    // If cart is invalid, show error and reset the cart
-    if (!isValidCart) {
-        displayMessage("Cart data is invalid. Please try adding items again.", true);
-        localStorage.removeItem("cart");
-    } else {
-        // Calculate total cost and total quantity for shipping
-        cart.forEach(item => {
-            const itemPrice = item.price; // Apply membership price discount
-            totalCost += item.quantity * itemPrice; // Add the item cost to the total
-            totalQuantity += item.quantity;  // Add item quantity to the total for shipping calculation
-        });
-
-        // Calculate shipping cost based on membership and total quantity
-        const shipping = membershipTiers[membership].shipping * totalQuantity; // Multiply by total items
-
-        // Display the calculated totals
-        checkoutContainer.innerHTML = `
-            <p>Subtotal: £${totalCost.toFixed(2)}</p>
-            <p>Shipping: £${shipping.toFixed(2)}</p>
-            <p><strong>Total: £${(totalCost + shipping).toFixed(2)}</strong></p>
-        `;
-
-        // Handle order confirmation on click
-        confirmOrderButton.addEventListener("click", () => {
-            // Generate new order ID by incrementing the stored value
-            let lastOrderID = parseInt(localStorage.getItem("lastOrderID")) || 0;
-            const newOrderID = lastOrderID + 1; // Increment the order ID
-
-            // Save the new order ID back to localStorage
-            localStorage.setItem("lastOrderID", newOrderID);
-
-            // Create new order
-            const newOrder = {
-                id: newOrderID,
-                user: currentUser,
-                cart: cart,
-                total: totalCost,
-                shipping: shipping
-            };
-
-            // Add the new order to localStorage
-            orders.push(newOrder);
-            localStorage.setItem("orders", JSON.stringify(orders));
-
-            // Clear cart after order is placed
-            localStorage.removeItem("cart");
-
-            // Display success message
-            displayMessage("Order confirmed! Thank you.");
-
-            // Redirect after a short delay
-            setTimeout(() => window.location.href = "profile.html", 1500);
-        });
-    }
-
-    // Display user's order history
-    const userOrders = orders.filter(order => order.user === currentUser); // Filter orders for the current user
-
-    if (userOrders.length === 0) {
-        orderHistoryContainer.innerHTML = "<p>You have no orders yet.</p>";
-    } else {
-        userOrders.forEach(order => {
-            const orderElement = document.createElement("div");
-            orderElement.classList.add("order");
-
-            // Calculate points earned (money spent - shipping) / 100, rounded down
-            const pointsEarned = Math.floor((order.total - order.shipping) / 100);
-
-            // Create order summary
-            let orderDetails = `
-                <p><strong>Order ID:</strong> ${order.id}</p>
-                <p><strong>Total:</strong> £${(order.total + order.shipping).toFixed(2)}</p>
-                <p><strong>Shipping:</strong> £${order.shipping.toFixed(2)}</p>
-                <p><strong>Points Earned:</strong> ${pointsEarned} points</p>
-                <p><strong>Items:</strong></p>
-                <ul>
-            `;
-
-            order.cart.forEach(item => {
-                orderDetails += `
-                    <li>${item.title} (x${item.quantity}) - £${(item.price * item.quantity).toFixed(2)}</li>
-                `;
-            });
-
-            orderDetails += `</ul><hr>`;
-
-            // Add order details to the page
-            orderElement.innerHTML = orderDetails;
-            orderHistoryContainer.appendChild(orderElement);
-        });
-    }
-});
+}
 
 // Fetch current user data
 function getUserData() {
     return database.find(user => user.username === currentUser) || null;
 }
 
-// Display a message on the screen
-function displayMessage(message, isError = false) {
-    if (messageContainer) {
-        messageContainer.textContent = message;
-        messageContainer.style.color = isError ? "red" : "green";
-    }
+// Update the cart item count
+function updateCartCount() {
+    const cartItemCount = document.getElementById("cart-item-count");
+    const totalItems = cart.reduce((sum, item) => sum + item.quantity, 0); // Sum all item quantities
+    if (cartItemCount) cartItemCount.textContent = totalItems; // Update the cart count
 }
 
 // Fetch Products from API (Fakestore API)
@@ -205,10 +65,153 @@ function fetchProducts() {
         .catch(() => displayMessage("Error fetching products.", true));
 }
 
-// Add to Cart functionality
+// DOMContentLoaded Event
+document.addEventListener("DOMContentLoaded", () => {
+    // Redirect if not signed in
+    if (!currentUser && !["signin.html", "signup.html"].some(path => window.location.pathname.includes(path))) {
+        window.location.href = "signin.html";
+    }
+
+    // Update username display
+    if (usernameDisplay && currentUser) {
+        const user = getUserData();
+        if (user) usernameDisplay.textContent = `${user.username} (${user.membership})`;
+    }
+
+    // Initialize logout button
+    if (logoutButton) {
+        logoutButton.addEventListener("click", () => {
+            localStorage.removeItem("currentUser");
+            window.location.href = "signin.html";
+        });
+    }
+
+    // Initialize checkout logic
+    const checkoutContainer = document.getElementById("checkout-summary");
+    const confirmOrderButton = document.getElementById("confirm-order");
+
+    if (checkoutContainer && confirmOrderButton) {
+        // Handle empty cart
+        if (cart.length === 0) {
+            displayMessage("Your cart is empty. Add items before proceeding to checkout.", true);
+            checkoutContainer.innerHTML = `<p>Your cart is empty. Add items before proceeding to checkout.</p>`;
+        } else {
+            const user = getUserData();
+            const membership = user ? user.membership : "bronze";
+            let totalCost = 0, totalQuantity = 0;
+
+            // Validate cart data
+            if (cart.every(item => item && typeof item.price === "number" && typeof item.quantity === "number")) {
+                cart.forEach(item => {
+                    totalCost += item.quantity * item.price;
+                    totalQuantity += item.quantity;
+                });
+
+                const shipping = membershipTiers[membership].shipping * totalQuantity;
+                checkoutContainer.innerHTML = `
+                    <p>Subtotal: £${totalCost.toFixed(2)}</p>
+                    <p>Shipping: £${shipping.toFixed(2)}</p>
+                    <p><strong>Total: £${(totalCost + shipping).toFixed(2)}</strong></p>
+                `;
+
+                confirmOrderButton.addEventListener("click", () => {
+                    const newOrderID = (parseInt(localStorage.getItem("lastOrderID")) || 0) + 1;
+                    localStorage.setItem("lastOrderID", newOrderID);
+
+                    const newOrder = { id: newOrderID, user: currentUser, cart, total: totalCost, shipping };
+                    orders.push(newOrder);
+                    localStorage.setItem("orders", JSON.stringify(orders));
+                    localStorage.removeItem("cart");
+
+                    displayMessage("Order confirmed! Thank you.");
+                    setTimeout(() => window.location.href = "profile.html", 1500);
+                });
+            } else {
+                displayMessage("Cart data is invalid. Please try adding items again.", true);
+                localStorage.removeItem("cart");
+            }
+        }
+    }
+
+    // Display order history
+    if (orderHistoryContainer) {
+        const userOrders = orders.filter(order => order.user === currentUser);
+
+        if (userOrders.length === 0) {
+            orderHistoryContainer.innerHTML = "<p>You have no orders yet.</p>";
+        } else {
+            userOrders.forEach(order => {
+                const orderElement = document.createElement("div");
+                orderElement.classList.add("order");
+
+                const pointsEarned = Math.floor((order.total - order.shipping) / 100);
+                let orderDetails = `
+                    <p><strong>Order ID:</strong> ${order.id}</p>
+                    <p><strong>Total:</strong> £${(order.total + order.shipping).toFixed(2)}</p>
+                    <p><strong>Shipping:</strong> £${order.shipping.toFixed(2)}</p>
+                    <p><strong>Points Earned:</strong> ${pointsEarned} points</p>
+                    <p><strong>Items:</strong></p>
+                    <ul>
+                `;
+
+                order.cart.forEach(item => {
+                    orderDetails += `<li>${item.title} (x${item.quantity}) - £${(item.price * item.quantity).toFixed(2)}</li>`;
+                });
+
+                orderDetails += `</ul><hr>`;
+                orderElement.innerHTML = orderDetails;
+                orderHistoryContainer.appendChild(orderElement);
+            });
+        }
+    }
+
+    // Initialize cart count and fetch products
+    updateCartCount();
+    if (productContainer) fetchProducts();
+});
+
+// Sign Up Logic
+const signupForm = document.getElementById("signup-form");
+if (signupForm) {
+    signupForm.addEventListener("submit", (e) => {
+        e.preventDefault();
+        const username = document.getElementById("signup-username").value.trim();
+        const password = document.getElementById("signup-password").value;
+
+        if (database.some(user => user.username === username)) {
+            displayMessage("Username already exists. Please sign in.", true);
+        } else {
+            database.push({ username, password, membership: "bronze", points: 0 });
+            localStorage.setItem("userDatabase", JSON.stringify(database));
+            displayMessage("Sign Up successful! You can now sign in.");
+            setTimeout(() => (window.location.href = "signin.html"), 1500);
+        }
+    });
+}
+
+// Sign In Logic
+const signinForm = document.getElementById("signin-form");
+if (signinForm) {
+    signinForm.addEventListener("submit", (e) => {
+        e.preventDefault();
+        const username = document.getElementById("signin-username").value.trim();
+        const password = document.getElementById("signin-password").value;
+
+        const user = database.find(user => user.username === username && user.password === password);
+        if (user) {
+            localStorage.setItem("currentUser", username);
+            displayMessage(`Welcome back, ${username}!`);
+            setTimeout(() => (window.location.href = "Shop.html"), 1500);
+        } else {
+            displayMessage("Invalid credentials. Please try again.", true);
+        }
+    });
+}
+
+// Add to Cart Logic
 document.addEventListener("click", (e) => {
     if (e.target.classList.contains("add-to-cart")) {
-        const id = e.target.getAttribute("data-id");
+        const id = parseInt(e.target.getAttribute("data-id"), 10);
         const title = e.target.getAttribute("data-title");
         const price = parseFloat(e.target.getAttribute("data-price"));
 
@@ -220,56 +223,17 @@ document.addEventListener("click", (e) => {
         }
 
         localStorage.setItem("cart", JSON.stringify(cart));
+        updateCartCount();
         displayMessage(`${title} added to your cart.`);
     }
 });
 
-// Function to update the cart item count
-function updateCartCount() {
-    const cartItemCount = document.getElementById("cart-item-count");
-    const cart = JSON.parse(localStorage.getItem("cart")) || [];
-    const totalItems = cart.reduce((sum, item) => sum + item.quantity, 0); // Sum all item quantities
-    cartItemCount.textContent = totalItems; // Update the cart count
-}
-
-// Update the cart count whenever an item is added
-document.addEventListener("click", (e) => {
-    if (e.target.classList.contains("add-to-cart")) {
-        const id = e.target.getAttribute("data-id");
-        const title = e.target.getAttribute("data-title");
-        const price = parseFloat(e.target.getAttribute("data-price"));
-
-        // Add item to the cart
-        const cart = JSON.parse(localStorage.getItem("cart")) || [];
-        const existingItem = cart.find(item => item.id === id);
-        if (existingItem) {
-            existingItem.quantity += 1; // Increase quantity if item already exists
-        } else {
-            cart.push({ id, title, price, quantity: 1 }); // Add new item to the cart
-        }
-
-        localStorage.setItem("cart", JSON.stringify(cart)); // Save updated cart to localStorage
-        updateCartCount(); // Update the cart icon count
-        displayMessage(`${title} added to your cart.`);
-    }
-});
-
-// Call the updateCartCount function on page load to display the initial cart count
+// Checkout button logic
 document.addEventListener("DOMContentLoaded", () => {
-    updateCartCount(); // Initialize the cart item count on page load
-});
-
-document.addEventListener('DOMContentLoaded', () => {
     const checkoutButton = document.getElementById("checkout-button");
-
     if (checkoutButton) {
         checkoutButton.addEventListener("click", () => {
-            window.location.href = "checkout.html"; // Redirect to checkout page
+            window.location.href = "checkout.html";
         });
     }
 });
-
-// Initial fetch of products when the page loads
-if (productContainer) {
-    fetchProducts();
-}
