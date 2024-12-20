@@ -3,7 +3,7 @@
 This is a design for a POS system, it must fit our set requirements.
 Those requirements are :
 
-1.Images opposed to text and colours when comes to assortment items like fruit on website
+1.Images opposed to text and colours when comes to assortment items like fruit on the website
 
 2.Fewer and larger image opposed to more and smaller images on website
 
