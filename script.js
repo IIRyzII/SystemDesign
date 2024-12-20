@@ -89,6 +89,8 @@ document.addEventListener("DOMContentLoaded", () => {
     // Initialize checkout logic
     const checkoutContainer = document.getElementById("checkout-summary");
     const confirmOrderButton = document.getElementById("confirm-order");
+    const deliveryAddressInput = document.getElementById("delivery-address");
+    const paymentMethodSelect = document.getElementById("payment-method");
 
     if (checkoutContainer && confirmOrderButton) {
         // Handle empty cart
@@ -115,10 +117,33 @@ document.addEventListener("DOMContentLoaded", () => {
                 `;
 
                 confirmOrderButton.addEventListener("click", () => {
+                    const deliveryAddress = deliveryAddressInput.value.trim();
+                    const paymentMethod = paymentMethodSelect.value;
+
+                    // Validate delivery address
+                    if (!deliveryAddress) {
+                        displayMessage("Please enter a delivery address.", true);
+                        return;
+                    }
+
+                    // Validate payment method
+                    if (!paymentMethod) {
+                        displayMessage("Please select a payment method.", true);
+                        return;
+                    }
+
                     const newOrderID = (parseInt(localStorage.getItem("lastOrderID")) || 0) + 1;
                     localStorage.setItem("lastOrderID", newOrderID);
 
-                    const newOrder = { id: newOrderID, user: currentUser, cart, total: totalCost, shipping };
+                    const newOrder = {
+                        id: newOrderID,
+                        user: currentUser,
+                        cart,
+                        total: totalCost,
+                        shipping,
+                        deliveryAddress,
+                        paymentMethod
+                    };
                     orders.push(newOrder);
                     localStorage.setItem("orders", JSON.stringify(orders));
                     localStorage.removeItem("cart");
@@ -149,6 +174,8 @@ document.addEventListener("DOMContentLoaded", () => {
                     <p><strong>Order ID:</strong> ${order.id}</p>
                     <p><strong>Total:</strong> £${(order.total + order.shipping).toFixed(2)}</p>
                     <p><strong>Shipping:</strong> £${order.shipping.toFixed(2)}</p>
+                    <p><strong>Delivery Address:</strong> ${order.deliveryAddress || "Not provided"}</p>
+                    <p><strong>Payment Method:</strong> ${order.paymentMethod || "Not selected"}</p>
                     <p><strong>Points Earned:</strong> ${pointsEarned} points</p>
                     <p><strong>Items:</strong></p>
                     <ul>
